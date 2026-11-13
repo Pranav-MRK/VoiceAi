@@ -1,0 +1,91 @@
+
+services:
+  opensearch:
+    image: opensearchproject/opensearch:2.19.1
+    container_name: samvadai-opensearch
+    environment:
+      - discovery.type=single-node
+      - cluster.name=samvadai-cluster
+      - node.name=samvadai-node
+      - OPENSEARCH_JAVA_OPTS=-Xms512m -Xmx512m
+      - bootstrap.memory_lock=true
+      - OPENSEARCH_INITIAL_ADMIN_PASSWORD=${OPENSEARCH_PASSWORD}
+    ports:
+      - "9200:9200"
+    
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - opensearch_data:/usr/share/opensearch/data
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - 'curl -k -s -u "admin:$${OPENSEARCH_INITIAL_ADMIN_PASSWORD}" https://localhost:9200/_cluster/health | grep -q "\"status\""'
+      interval: 20s
+      timeout: 10s
+      retries: 10
+      start_period: 60s
+
+
+# postgres
+
+
+  postgres:
+    image: postgres:16
+    container_name: samvadai-postgres
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+
+#  redis 
+  redis:
+    image: redis:7.4-alpine
+    container_name: samvadai-redis
+    restart: unless-stopped
+
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+
+    command:
+      - redis-server
+      - --requirepass
+      - ${REDIS_PASSWORD}
+      - --appendonly
+      - "yes"
+
+    ports:
+      - "6379:6379"
+
+    volumes:
+      - redis_data:/data
+
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - 'REDISCLI_AUTH="$$REDIS_PASSWORD" redis-cli ping | grep -q PONG'
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+
+
+
+volumes:
+  opensearch_data:
+  postgres_data:
+  redis_data:
