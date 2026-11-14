@@ -1,5 +1,5 @@
 from langchain_groq import ChatGroq
-
+from functools import lru_cache
 from app.core.config import settings
 from app.rag.retrieval.retriever import RAGRetriever
 from app.rag.context.builder import ContextBuilder
@@ -13,7 +13,9 @@ from langchain_core.messages import (
 )
 
 from pydantic import SecretStr
-retriever = RAGRetriever()
+@lru_cache(maxsize=1)
+def get_retriever():
+    return RAGRetriever()
 context_builder = ContextBuilder()
 
 llm = ChatGroq(
@@ -32,6 +34,7 @@ def retrieve_node(state: SamvadState):
         top_k=settings.RETRIEVAL_TOP_K,
     )
 
+    retriever = get_retriever()
     response = retriever.retrieve(request)
 
     return {

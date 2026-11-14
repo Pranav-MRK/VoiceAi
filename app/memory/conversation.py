@@ -46,7 +46,7 @@ async def process_message(
                 AIMessage(content=message["content"])
             )
 
-    # 3. Execute the RAG workflow
+
     # 3. Execute the RAG workflow asynchronously
     initial_state: SamvadState = {
         "call_id": call_id,
