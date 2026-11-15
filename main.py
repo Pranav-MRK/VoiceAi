@@ -3,7 +3,7 @@ from contextlib import asynccontextmanager
 from app.api.routes.calls import router as calls_router
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-
+from app.api.routes.dashboard import router as dashboard_router
 from app.db.postgres import close_postgres
 from app.db.redis import get_redis, close_redis
 
@@ -27,7 +27,9 @@ app = FastAPI(
     version="1.0.0",
     lifespan=lifespan,
 )
+
 app.include_router(calls_router)
+app.include_router(dashboard_router)
 
 # CORS configuration for React frontend
 app.add_middleware(
