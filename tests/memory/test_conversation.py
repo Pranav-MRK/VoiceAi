@@ -22,6 +22,18 @@ class MockWorkflow:
             "sources": [],
         }
 
+class MockFAQCache:
+    async def get(self, question, language="en"):
+        return None
+
+    async def set(
+        self,
+        question,
+        answer,
+        language="en",
+        sources=None,
+    ):
+        pass
 
 @pytest.mark.asyncio
 async def test_multi_turn_conversation(monkeypatch):
@@ -37,6 +49,11 @@ async def test_multi_turn_conversation(monkeypatch):
         conversation,
         "rag_workflow",
         mock_workflow,
+    )
+    monkeypatch.setattr(
+        conversation,
+        "faq_cache",
+        MockFAQCache(),
     )
 
     async with AsyncSessionLocal() as db:

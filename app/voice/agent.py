@@ -7,6 +7,7 @@ from livekit.agents import (
     AgentServer,
     AgentSession,
     JobContext,
+    JobProcess,
     RunContext,
     function_tool,
 )
@@ -22,6 +23,16 @@ logger = logging.getLogger("samvadai.voice")
 server = AgentServer()
 memory_manager = MemoryManager()
 
+def prewarm(proc: JobProcess):
+    """Load reusable models before the agent job starts."""
+    logger.info("Preloading Silero VAD model...")
+
+    proc.userdata["vad"] = silero.VAD.load()
+
+    logger.info("Silero VAD model preloaded successfully.")
+
+
+server.setup_fnc = prewarm
 
 class SamvadAIAgent(Agent):
 
@@ -116,7 +127,7 @@ async def entrypoint(ctx: JobContext):
             base_url="http://localhost:8880/v1",
             response_format="wav",
         ),
-        vad=silero.VAD.load(),
+        vad=ctx.proc.userdata["vad"],
     )
 
     await session.start(
