@@ -24,7 +24,11 @@ def test_retrieve_node(monkeypatch):
         )
     ]
 
-    monkeypatch.setattr(nodes, "retriever", mock_retriever)
+    monkeypatch.setattr(
+        nodes,
+        "get_retriever",
+        lambda: mock_retriever,
+    )
 
     result = retrieve_node({
         "query": "B.Tech admission eligibility"

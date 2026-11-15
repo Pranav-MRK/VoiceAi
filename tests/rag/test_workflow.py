@@ -37,7 +37,11 @@ def test_rag_workflow(monkeypatch):
     )
 
     # Replace actual services with mocks
-    monkeypatch.setattr(nodes, "retriever", mock_retriever)
+    monkeypatch.setattr(
+        nodes,
+        "get_retriever",
+        lambda: mock_retriever,
+    )
     monkeypatch.setattr(
         nodes, "context_builder", mock_context_builder
     )
